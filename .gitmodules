@@ -4,3 +4,6 @@
 [submodule "vendor/glm"]
 	path = vendor/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "vendor/sdl_image"]
+	path = vendor/sdl_image
+	url = https://github.com/libsdl-org/SDL_image.git
