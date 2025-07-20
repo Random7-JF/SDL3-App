@@ -4,7 +4,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_compile_options(-Wall -Wextra -g)
 
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-file(GLOB_RECURSE APP_SOURCES "${SOURCE_DIR}/*.cpp")
+file(GLOB_RECURSE APP_SOURCES 
+    "${SOURCE_DIR}/*.cpp"
+    "${SOURCE_DIR}/game/*.cpp")
+
 add_executable(SDL3-App  ${APP_SOURCES})
 
 add_subdirectory(vendor/sdl3)
