@@ -1,4 +1,3 @@
 #! /bin/sh
 
-cd build/bin
-./SDL3-App
+./build/bin/SDL3-App
