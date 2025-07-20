@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.10)
+project(SDL3-App CXX)
+
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+file(GLOB_RECURSE APP_SOURCES "${SOURCE_DIR}/*.cpp")
+add_executable(SDL3-App  ${APP_SOURCES})
+
+add_subdirectory(vendor/sdl3)
+
+target_include_directories(SDL3-App  PUBLIC ${SOURCE_DIR} PUBLIC vendor/sdl3)
+target_link_libraries(SDL3-App  PRIVATE SDL3::SDL3)
