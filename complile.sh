@@ -1,4 +1,4 @@
 #! /bin/sh
 
 cd build/
-cmake --build .
+cmake --build . --config Debug --parallel 10
