@@ -22,8 +22,7 @@ public:
             window_width,
             window_height,
             game_width,
-            game_height
-        } { }
+            game_height} {}
 
   bool Init();
   void Run();

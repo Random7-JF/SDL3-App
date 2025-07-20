@@ -40,7 +40,7 @@ void Game::Run()
   SDL_SetRenderLogicalPresentation(m_state.renderer, m_state.gameWidth, m_state.gameHeight,
                                    SDL_LOGICAL_PRESENTATION_LETTERBOX);
   bool running = true;
-  
+
   Asset player(IMG_LoadTexture(m_state.renderer, "data/player.png"), SDL_SCALEMODE_NEAREST);
 
   // start of the running loop
@@ -62,25 +62,25 @@ void Game::Run()
         m_state.windowWidth = event.window.data1;
         m_state.windowHeight = event.window.data2;
         break;
-      } 
+      }
       }
     } // end of event loop
     SDL_SetRenderDrawColor(m_state.renderer, 28, 20, 10, 255);
     SDL_RenderClear(m_state.renderer);
 
     SDL_FRect src{
-      .x = 32 * 22,
-      .y = 32,
-      .w = 32,
-      .h = 32};
+        .x = 32 * 22,
+        .y = 32,
+        .w = 32,
+        .h = 32};
 
     SDL_FRect dst{
-      .x = 150,
-      .y = 150,
-      .w = 64,
-      .h = 64};
+        .x = 150,
+        .y = 150,
+        .w = 64,
+        .h = 64};
 
-  SDL_RenderTextureRotated(m_state.renderer, player.getTexture(), &src, &dst, 0, nullptr, SDL_FLIP_NONE);
+    SDL_RenderTextureRotated(m_state.renderer, player.getTexture(), &src, &dst, 0, nullptr, SDL_FLIP_NONE);
 
     // swap buffers
     SDL_RenderPresent(m_state.renderer);
