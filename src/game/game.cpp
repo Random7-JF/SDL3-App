@@ -22,14 +22,31 @@ bool Game::Init()
                              "Error creating window", m_state.window);
     return initialized;
   }
-
-  m_state.renderer = SDL_CreateRenderer(m_state.window, NULL);
-  if (!m_state.renderer)
-  {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
-                             "error creating renderer", m_state.window);
-    return initialized;
+  
+  m_state.glcontext = SDL_GL_CreateContext(m_state.window);
+  if (!m_state.glcontext) {
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
+                           "Error creating gl context", m_state.window);
+      return initialized;
   }
+
+  SDL_GL_MakeCurrent(m_state.window,m_state.glcontext);
+  
+  GLenum glewError = glewInit();
+  if (glewError != GLEW_OK) {
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
+                     "Error glew init", m_state.window);
+      SDL_Log("%s", glewError);
+      return initialized;
+  }
+
+  // m_state.renderer = SDL_CreateRenderer(m_state.window, NULL);
+  // if (!m_state.renderer)
+  // {
+  //   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
+  //                            "error creating renderer", m_state.window);
+  //   return initialized;
+  // }
   initialized = true;
 
   return initialized;
@@ -41,8 +58,6 @@ void Game::Run()
   SDL_SetRenderLogicalPresentation(m_state.renderer, m_state.gameWidth, m_state.gameHeight,
                                    SDL_LOGICAL_PRESENTATION_LETTERBOX);
   bool running = true;
-
-  Asset player(IMG_LoadTexture(m_state.renderer, "data/player.png"), SDL_SCALEMODE_NEAREST);
 
   // start of the running loop
   while (running)
@@ -68,9 +83,12 @@ void Game::Run()
     } // end of event loop
 
     // OpenGL
+    glViewport(0, 0, m_state.windowWidth, m_state.windowHeight); // Initial viewport
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Dark teal background
+
 
     // swap buffers
-    SDL_RenderPresent(m_state.renderer);
+    SDL_GL_SwapWindow(m_state.window);
   } // end of running loop
   SDL_DestroyRenderer(m_state.renderer);
   SDL_DestroyWindow(m_state.window);

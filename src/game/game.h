@@ -5,6 +5,7 @@ struct State
 {
   SDL_Window *window;
   SDL_Renderer *renderer;
+  SDL_GLContext glcontext;
   int windowWidth, windowHeight;
   int gameWidth, gameHeight;
 };
@@ -17,6 +18,7 @@ private:
 public:
   Game(int window_width, int window_height, int game_width, int game_height)
       : m_state{
+            nullptr,
             nullptr,
             nullptr,
             window_width,
