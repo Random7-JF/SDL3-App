@@ -13,7 +13,8 @@ add_executable(SDL3-App  ${APP_SOURCES})
 add_subdirectory(vendor/sdl3)
 add_subdirectory(vendor/glm)
 add_subdirectory(vendor/sdl_image)
+add_subdirectory(vendor/glew/build/cmake)
 
-target_include_directories(SDL3-App  PUBLIC ${SOURCE_DIR} vendor/sdl3 vendor/glm/glm vendor/sdl_image/include/sdl3_image)
-target_link_libraries(SDL3-App PRIVATE SDL3::SDL3 glm::glm SDL3_image::SDL3_image)
+target_include_directories(SDL3-App PUBLIC ${SOURCE_DIR} vendor/sdl3 vendor/glm/glm vendor/sdl_image/include/sdl3_image vendor/glew/include/)
+target_link_libraries(SDL3-App PRIVATE SDL3::SDL3 glm::glm SDL3_image::SDL3_image glew)
 

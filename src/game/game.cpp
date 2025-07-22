@@ -1,4 +1,5 @@
 #include <SDL3/SDL.h>
+#include <GL/glew.h>
 
 #include "game.h"
 #include "asset.h"
@@ -65,22 +66,8 @@ void Game::Run()
       }
       }
     } // end of event loop
-    SDL_SetRenderDrawColor(m_state.renderer, 28, 20, 10, 255);
-    SDL_RenderClear(m_state.renderer);
 
-    SDL_FRect src{
-        .x = 32 * 22,
-        .y = 32,
-        .w = 32,
-        .h = 32};
-
-    SDL_FRect dst{
-        .x = 150,
-        .y = 150,
-        .w = 64,
-        .h = 64};
-
-    SDL_RenderTextureRotated(m_state.renderer, player.getTexture(), &src, &dst, 0, nullptr, SDL_FLIP_NONE);
+    // OpenGL
 
     // swap buffers
     SDL_RenderPresent(m_state.renderer);
