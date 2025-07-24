@@ -28,4 +28,5 @@ public:
 
   bool Init();
   void Run();
+  void DrawTriangle();
 };
