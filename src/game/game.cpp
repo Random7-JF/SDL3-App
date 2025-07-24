@@ -13,6 +13,18 @@ bool Game::Init()
                              "Error Initializing SDL3", nullptr);
     return initialized;
   }
+    // --- SET OPENGL ATTRIBUTES *BEFORE* CREATING THE WINDOW AND CONTEXT ---
+  // Request an OpenGL 3.3 core profile
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+  // This is the equivalent of GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+
+  // You should also set other attributes like double buffering and depth size
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); // Important for 3D
 
   m_state.window =
       SDL_CreateWindow("SDL", m_state.windowWidth, m_state.windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
@@ -34,14 +46,17 @@ bool Game::Init()
 
   SDL_GL_MakeCurrent(m_state.window, m_state.glcontext);
 
+  glewExperimental = GL_TRUE;
   GLenum glewError = glewInit();
   if (glewError != GLEW_OK)
   {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Error glew init", m_state.window);
-    SDL_Log("%s", glewError);
+    SDL_Log("%s", glewGetErrorString(glewError));
     return initialized;
   }
+  
+
   glViewport(0, 0, m_state.windowWidth, m_state.windowHeight); // Initial viewport
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);                        // Dark teal background
 
@@ -61,6 +76,10 @@ void Game::Run()
       -0.5f, -0.5f,
       0.0f, 0.5f,
       0.5f, -0.5f};
+
+  unsigned int vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
 
   // create gl (vertex)buffer
   unsigned int buffer;
@@ -95,9 +114,10 @@ void Game::Run()
 
     // OpenGL
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
-
+    // --- CRITICAL: Bind VAO before drawing ---
+    glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-
+    glBindVertexArray(0); // Optional: Unbind VAO after drawing
     SDL_GL_SwapWindow(m_state.window);
 
   } // end of running loop
