@@ -45,6 +45,7 @@ bool Game::Init()
                       SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+  
 
   m_state.window =
       SDL_CreateWindow("SDL", m_state.windowWidth, m_state.windowHeight,
@@ -63,6 +64,7 @@ bool Game::Init()
   }
 
   SDL_GL_MakeCurrent(m_state.window, m_state.glcontext);
+  SDL_GL_SetSwapInterval(1);
 
   glewExperimental = GL_TRUE;
   GLenum glewError = glewInit();
@@ -121,6 +123,11 @@ void Game::Run()
       CreateShader(source.VertexSource, source.FragmentSource);
   glUseProgram(shader);
 
+  GLCall(int uniformLocation = glGetUniformLocation(shader, "u_Color"));
+  ASSERT(uniformLocation != -1);
+  
+  float r = 0.0f;
+  float increment = 0.005f;
   // start of the running loop
   while (running)
   {
@@ -151,8 +158,15 @@ void Game::Run()
 
     // draw calls
     glBindVertexArray(vao);
+    GLCall(glUniform4f(uniformLocation, r, 0.2f, 0.3f, 1.0f));
     GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
+    if (r > 1.0f)
+      increment = -0.005f;
+    else if (r < 0.0f)
+      increment = 0.005f;
+
+    r += increment;
 
     SDL_GL_SwapWindow(m_state.window);
 

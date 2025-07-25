@@ -15,7 +15,7 @@
             },
             "presentation": {
                 "reveal": "always", // Show the terminal output
-                "panel": "new"     // Open in a new panel
+                "panel": "dedicated" 
             },
             "problemMatcher": "$gcc" // VS Code will parse gcc/g++ errors from the output
         },
