@@ -25,7 +25,7 @@ bool Game::Init()
                       SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); // Important for 3D
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
   m_state.window =
       SDL_CreateWindow("SDL", m_state.windowWidth, m_state.windowHeight,
@@ -64,7 +64,7 @@ void Game::Run()
 {
   bool running = true;
   SDL_Log("running...");
-  
+
   // data to go to the gpu
   float positions[] = {-0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f};
   unsigned int indices[] = {0, 1, 2, 2, 3, 0};
@@ -81,7 +81,7 @@ void Game::Run()
   glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions,
                GL_STATIC_DRAW);
 
-  // create indicies buffer object
+  // create indicies buffer object IBO
   unsigned int ibo;
   glGenBuffers(1, &ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
@@ -91,6 +91,7 @@ void Game::Run()
   glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 2, 0);
   glEnableVertexAttribArray(0);
 
+  // get and compile shader from file
   ShaderProgramSource source = ParseShader("data/res/Basic.shader");
   unsigned int shader =
       CreateShader(source.VertexSource, source.FragmentSource);
@@ -128,7 +129,6 @@ void Game::Run()
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
-    glBindVertexArray(0);
     SDL_GL_SwapWindow(m_state.window);
 
   } // end of running loop
