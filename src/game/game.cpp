@@ -8,6 +8,26 @@
 #include "game.h"
 #include "shader.h"
 
+#define ASSERT(x) if (!(x)) __asm__ volatile("int3");
+#define GLCall(x) GLClearError();\
+  x;\
+  ASSERT(GLLogcall(#x, __FILE__, __LINE__))
+
+static void GLClearError() 
+{
+   while(glGetError() != GL_NO_ERROR);    
+}
+
+static bool GLLogcall(const char* function, const char* file, int line) 
+{
+  while(GLenum error = glGetError())
+  {
+    SDL_Log("OpenGL Error: %d - Function:%s File:%s Line:%d", error, function, file, line);
+    return false;
+  }
+  return true;
+}
+
 bool Game::Init()
 {
   bool initialized = false;
@@ -17,13 +37,12 @@ bool Game::Init()
                              "Error Initializing SDL3", nullptr);
     return initialized;
   }
+
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,
                       SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
@@ -66,30 +85,35 @@ void Game::Run()
   SDL_Log("running...");
 
   // data to go to the gpu
-  float positions[] = {-0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f};
-  unsigned int indices[] = {0, 1, 2, 2, 3, 0};
+  float positions[] = {
+      -0.5f, -0.5f, // 0
+      0.5f, -0.5f,  // 1
+      0.5f, 0.5f,   // 2
+      -0.5f, 0.5f}; // 3
+  unsigned int indices[] = {
+      0, 1, 2,
+      2, 3, 0};
 
   // create vertex attrib object VAO
   unsigned int vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
+  GLCall(glGenVertexArrays(1, &vao));
+  GLCall(glBindVertexArray(vao));
 
   // create vertex buffer object VBO
   unsigned int vbo;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions,
-               GL_STATIC_DRAW);
+  GLCall(glGenBuffers(1, &vbo));
+  GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+  GLCall(glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions,
+               GL_STATIC_DRAW));
 
   // create indicies buffer object IBO
   unsigned int ibo;
-  glGenBuffers(1, &ibo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices,
-               GL_STATIC_DRAW);
+  GLCall(glGenBuffers(1, &ibo));
+  GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+  GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices,GL_STATIC_DRAW));
 
-  glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 2, 0);
-  glEnableVertexAttribArray(0);
+  GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 2, 0));
+  GLCall(glEnableVertexAttribArray(0));
 
   // get and compile shader from file
   ShaderProgramSource source = ParseShader("data/res/Basic.shader");
@@ -125,9 +149,10 @@ void Game::Run()
     glClear(GL_COLOR_BUFFER_BIT |
             GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
 
-    // draw call
+    // draw calls
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
 
     SDL_GL_SwapWindow(m_state.window);
 
