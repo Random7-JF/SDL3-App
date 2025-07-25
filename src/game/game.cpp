@@ -1,9 +1,50 @@
 #include <SDL3/SDL.h>
 #include <GL/glew.h>
 #include <string>
+#include <sstream>
+#include <fstream>
 
 #include "game.h"
 #include "asset.h"
+
+struct ShaderProgramSource
+{
+  std::string VertexSource;
+  std::string FragmentSource;
+};
+
+static ShaderProgramSource ParseShader(const std::string& filepath)
+{
+  std::ifstream stream(filepath);
+  enum class ShaderType
+  {
+    NONE =-1, VERTEX = -0, FRAGMENT = 1
+  };
+
+  std::string line;
+  std::stringstream ss[2];
+  ShaderType type = ShaderType::NONE;
+
+  while(getline(stream, line))
+  {
+    if (line.find("#shader") != std::string::npos)
+    {
+      if (line.find("vertex") != std::string::npos) 
+      {
+        type = ShaderType::VERTEX;
+      }
+      else if (line.find("fragment") != std::string::npos) 
+      {
+        type = ShaderType::FRAGMENT;
+      }
+    }
+    else 
+    {
+      ss[(int)type] << line << "\n";
+    }
+  }
+  return { ss[0].str(), ss[1].str() };
+}
 
 static unsigned int CompileShader(unsigned int type, const std::string& source)
 {
@@ -164,28 +205,12 @@ void Game::Run()
   glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 2, 0);
   glEnableVertexAttribArray(0);
 
-std::string vertexShader =
-  "#version 420 core\n"
-  "\n"
-  "layout(location = 0) in vec2 position;" // Changed from vec4 to vec2
-  "\n"
-  "void main()\n"
-  "{\n"
-  " gl_Position = vec4(position, 0.0, 1.0);\n" // <--- ADD THIS LINE: Explicitly construct vec4 from vec2
-  "}\n";
+  ShaderProgramSource source = ParseShader("data/res/Basic.shader");
+  SDL_Log("---Vertex---\n%s", source.VertexSource.c_str());
+  SDL_Log("---Fragment---\n %s", source.FragmentSource.c_str());
+  unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
+  glUseProgram(shader);
 
-std::string fragShader =
-  "#version 420 core\n"
-  "\n"
-  "layout(location = 0) out vec4 color;\n"
-  "\n"
-  "void main()\n"
-  "{\n"
-  " color = vec4(1.0, 0.0, 0.0, 1.0);\n"
-  "}\n";
-
-  unsigned int shader = CreateShader(vertexShader, fragShader);
-  
   // start of the running loop
   while (running)
   {
@@ -212,7 +237,8 @@ std::string fragShader =
 
     // OpenGL
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
-    glUseProgram(shader);
+    
+    // draw call
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -220,6 +246,7 @@ std::string fragShader =
     SDL_GL_SwapWindow(m_state.window);
 
   } // end of running loop
+  glDeleteProgram(shader);
   SDL_DestroyRenderer(m_state.renderer);
   SDL_DestroyWindow(m_state.window);
 }
