@@ -7,27 +7,41 @@
 #include "asset.h"
 #include "game.h"
 
-struct ShaderProgramSource {
+struct ShaderProgramSource
+{
   std::string VertexSource;
   std::string FragmentSource;
 };
 
-static ShaderProgramSource ParseShader(const std::string &filepath) {
+static ShaderProgramSource ParseShader(const std::string &filepath)
+{
   std::ifstream stream(filepath);
-  enum class ShaderType { NONE = -1, VERTEX = -0, FRAGMENT = 1 };
+  enum class ShaderType
+  {
+    NONE = -1,
+    VERTEX = -0,
+    FRAGMENT = 1
+  };
 
   std::string line;
   std::stringstream ss[2];
   ShaderType type = ShaderType::NONE;
 
-  while (getline(stream, line)) {
-    if (line.find("#shader") != std::string::npos) {
-      if (line.find("vertex") != std::string::npos) {
+  while (getline(stream, line))
+  {
+    if (line.find("#shader") != std::string::npos)
+    {
+      if (line.find("vertex") != std::string::npos)
+      {
         type = ShaderType::VERTEX;
-      } else if (line.find("fragment") != std::string::npos) {
+      }
+      else if (line.find("fragment") != std::string::npos)
+      {
         type = ShaderType::FRAGMENT;
       }
-    } else {
+    }
+    else
+    {
       ss[(int)type] << line << "\n";
     }
   }
@@ -35,14 +49,18 @@ static ShaderProgramSource ParseShader(const std::string &filepath) {
 }
 
 static unsigned int CompileShader(unsigned int type,
-                                  const std::string &source) {
+                                  const std::string &source)
+{
   unsigned int id = glCreateShader(type);
   const char *src = source.c_str();
   glShaderSource(id, 1, &src, nullptr); // read the docs on this.
   glCompileShader(id);
-  if (type == GL_VERTEX_SHADER) {
+  if (type == GL_VERTEX_SHADER)
+  {
     SDL_Log("--- Compiling Vertex Shader ---");
-  } else {
+  }
+  else
+  {
     SDL_Log("--- Compiling Fragment Shader ---");
   }
   SDL_Log("%s", src);
@@ -50,14 +68,18 @@ static unsigned int CompileShader(unsigned int type,
   int result;
   glGetShaderiv(id, GL_COMPILE_STATUS, &result);
 
-  if (result == GL_FALSE) {
+  if (result == GL_FALSE)
+  {
     int length;
     glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
     char *message = (char *)alloca(length * sizeof(char));
     glGetShaderInfoLog(id, length, &length, message);
-    if (type == GL_VERTEX_SHADER) {
+    if (type == GL_VERTEX_SHADER)
+    {
       SDL_Log("Failed to compile vertex shader: %s", message);
-    } else {
+    }
+    else
+    {
       SDL_Log("Failed to compile frag shader: %s", message);
     }
     glDeleteShader(id);
@@ -68,7 +90,8 @@ static unsigned int CompileShader(unsigned int type,
 }
 
 static unsigned int CreateShader(const std::string &vertexShader,
-                                 const std::string &fragmentShader) {
+                                 const std::string &fragmentShader)
+{
   unsigned int program = glCreateProgram();
   unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
   unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
@@ -80,7 +103,8 @@ static unsigned int CreateShader(const std::string &vertexShader,
   // --- ADD LINKING ERROR CHECKING ---
   int isLinked;
   glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-  if (isLinked == GL_FALSE) {
+  if (isLinked == GL_FALSE)
+  {
     int maxLength;
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
     char *infoLog = (char *)alloca(
@@ -98,7 +122,8 @@ static unsigned int CreateShader(const std::string &vertexShader,
   // --- ADD VALIDATION ERROR CHECKING ---
   int isValid;
   glGetProgramiv(program, GL_VALIDATE_STATUS, &isValid);
-  if (isValid == GL_FALSE) {
+  if (isValid == GL_FALSE)
+  {
     int maxLength;
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
     char *infoLog = (char *)alloca(maxLength * sizeof(char));
@@ -114,9 +139,11 @@ static unsigned int CreateShader(const std::string &vertexShader,
   return program;
 }
 
-bool Game::Init() {
+bool Game::Init()
+{
   bool initialized = false;
-  if (!SDL_Init(SDL_INIT_VIDEO)) {
+  if (!SDL_Init(SDL_INIT_VIDEO))
+  {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Error Initializing SDL3", nullptr);
     return initialized;
@@ -134,13 +161,15 @@ bool Game::Init() {
   m_state.window =
       SDL_CreateWindow("SDL", m_state.windowWidth, m_state.windowHeight,
                        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-  if (!m_state.window) {
+  if (!m_state.window)
+  {
     SDL_Log("Error with Create Window: %s", SDL_GetError());
     return initialized;
   }
 
   m_state.glcontext = SDL_GL_CreateContext(m_state.window);
-  if (!m_state.glcontext) {
+  if (!m_state.glcontext)
+  {
     SDL_Log("Error with Create Context: %s", SDL_GetError());
     return initialized;
   }
@@ -149,7 +178,8 @@ bool Game::Init() {
 
   glewExperimental = GL_TRUE;
   GLenum glewError = glewInit();
-  if (glewError != GLEW_OK) {
+  if (glewError != GLEW_OK)
+  {
     SDL_Log("Glew Error: %s, %d", glewGetErrorString(glewError), glewError);
     return initialized;
   }
@@ -161,15 +191,13 @@ bool Game::Init() {
   return initialized;
 }
 
-void Game::Run() {
-  SDL_Log("running...");
-  // SDL_SetRenderLogicalPresentation(m_state.renderer, m_state.gameWidth,
-  // m_state.gameHeight,
-  //                                  SDL_LOGICAL_PRESENTATION_LETTERBOX);
+void Game::Run()
+{
   bool running = true;
-
+  SDL_Log("running...");
+  
+  // data to go to the gpu
   float positions[] = {-0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f};
-
   unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
   // create vertex attrib object VAO
@@ -195,23 +223,26 @@ void Game::Run() {
   glEnableVertexAttribArray(0);
 
   ShaderProgramSource source = ParseShader("data/res/Basic.shader");
-  SDL_Log("---Vertex---\n%s", source.VertexSource.c_str());
-  SDL_Log("---Fragment---\n %s", source.FragmentSource.c_str());
   unsigned int shader =
       CreateShader(source.VertexSource, source.FragmentSource);
   glUseProgram(shader);
 
   // start of the running loop
-  while (running) {
+  while (running)
+  {
     SDL_Event event{0};
     // start of event loop
-    while (SDL_PollEvent(&event)) {
-      switch (event.type) {
-      case SDL_EVENT_QUIT: {
+    while (SDL_PollEvent(&event))
+    {
+      switch (event.type)
+      {
+      case SDL_EVENT_QUIT:
+      {
         running = false;
         break;
       }
-      case SDL_EVENT_WINDOW_RESIZED: {
+      case SDL_EVENT_WINDOW_RESIZED:
+      {
         m_state.windowWidth = event.window.data1;
         m_state.windowHeight = event.window.data2;
         glViewport(0, 0, m_state.windowWidth, m_state.windowHeight);
