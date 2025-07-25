@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Debug", // A descriptive name for your build task
+            "type": "shell",
+            "command": "${workspaceFolder}/compile.sh", // The command to run your build system
+            "args": [],
+            "options": {
+                // If you run CMake as part of your build, you might add pre-build steps here
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true // Set this to true to make it the default build task
+            },
+            "presentation": {
+                "reveal": "always", // Show the terminal output
+                "panel": "new"     // Open in a new panel
+            },
+            "problemMatcher": "$gcc" // VS Code will parse gcc/g++ errors from the output
+        },
+    ]
+}
