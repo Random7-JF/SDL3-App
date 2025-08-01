@@ -7,26 +7,9 @@
 #include "asset.h"
 #include "game.h"
 #include "shader.h"
-
-#define ASSERT(x) if (!(x)) __asm__ volatile("int3");
-#define GLCall(x) GLClearError();\
-  x;\
-  ASSERT(GLLogcall(#x, __FILE__, __LINE__))
-
-static void GLClearError() 
-{
-   while(glGetError() != GL_NO_ERROR);    
-}
-
-static bool GLLogcall(const char* function, const char* file, int line) 
-{
-  while(GLenum error = glGetError())
-  {
-    SDL_Log("OpenGL Error: %d - Function:%s File:%s Line:%d", error, function, file, line);
-    return false;
-  }
-  return true;
-}
+#include "renderer.h"
+#include "vertexBuffer.h"
+#include "indexBuffer.h"
 
 bool Game::Init()
 {
@@ -102,17 +85,10 @@ void Game::Run()
   GLCall(glBindVertexArray(vao));
 
   // create vertex buffer object VBO
-  unsigned int vbo;
-  GLCall(glGenBuffers(1, &vbo));
-  GLCall(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-  GLCall(glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions,
-               GL_STATIC_DRAW));
+  VertexBuffer vb(positions, 4*2*sizeof(float));
 
   // create indicies buffer object IBO
-  unsigned int ibo;
-  GLCall(glGenBuffers(1, &ibo));
-  GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
-  GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices,GL_STATIC_DRAW));
+  IndexBuffer ib( indices, 6);
 
   GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 2, 0));
   GLCall(glEnableVertexAttribArray(0));
@@ -159,12 +135,14 @@ void Game::Run()
     // draw calls
     glBindVertexArray(vao);
     GLCall(glUniform4f(uniformLocation, r, 0.2f, 0.3f, 1.0f));
+    
+    ib.Bind();
     GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
     if (r > 1.0f)
-      increment = -0.005f;
+      increment = -0.0005f;
     else if (r < 0.0f)
-      increment = 0.005f;
+      increment = 0.0005f;
 
     r += increment;
 
