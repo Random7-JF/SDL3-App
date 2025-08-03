@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.31)
 project(SDL3-App CXX)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_compile_options(-Wall -Wextra -g)
@@ -15,6 +15,6 @@ add_subdirectory(vendor/glm)
 add_subdirectory(vendor/sdl_image)
 add_subdirectory(vendor/glew/build/cmake)
 
-target_include_directories(SDL3-App PUBLIC ${SOURCE_DIR} vendor/sdl3 vendor/glm/glm vendor/sdl_image/include/sdl3_image vendor/glew/include/)
+target_include_directories(SDL3-App PUBLIC ${SOURCE_DIR} vendor/sdl3 vendor/glm/glm vendor/sdl_image/include/sdl3_image vendor/glew/include)
 target_link_libraries(SDL3-App PRIVATE SDL3::SDL3 glm::glm SDL3_image::SDL3_image glew)
 
