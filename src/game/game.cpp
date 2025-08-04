@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "vertexBuffer.h"
 #include "vertexArray.h"
+#include "vertexBufferLayout.h"
 
 bool Game::Init() {
   bool initialized = false;
@@ -81,6 +82,8 @@ void Game::Run() {
   Shader shader("data/res/Basic.shader");
   shader.Bind();
   shader.SetUniform4f("u_Color", 0.0f, 0.2f, 0.3f, 1.0f);
+  // create renderer from class
+  Renderer renderer;
 
   float r = 0.0f;
   float increment = 0.005f;
@@ -102,15 +105,11 @@ void Game::Run() {
       }
       }
     } // end of event loop
-
-    // OpenGL
-    glClear(GL_COLOR_BUFFER_BIT |
-            GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+    renderer.Clear();    
     shader.Bind();
     shader.SetUniform4f("u_Color", r, 0.2f, 0.3f, 1.0f);
-    va.Bind();
-    ib.Bind();
-    GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+    renderer.Draw(va,ib,shader);
+
 
     if (r > 1.0f)
       increment = -0.0005f;
