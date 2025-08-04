@@ -5,7 +5,7 @@
   {
 	VertexBufferElement element = {GL_FLOAT, count, GL_FALSE};
     m_elements.push_back(element);
-    m_stride = count * element.GetSizeOfType(GL_FLOAT);
+    m_stride += count * element.GetSizeOfType(GL_FLOAT);
   }
   template <>
   void VertexBufferLayout::Push<unsigned int>(unsigned int  count)

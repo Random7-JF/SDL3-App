@@ -9,6 +9,7 @@
 #include "vertexBuffer.h"
 #include "vertexArray.h"
 #include "vertexBufferLayout.h"
+#include "texture.h"
 
 bool Game::Init() {
   bool initialized = false;
@@ -42,6 +43,8 @@ bool Game::Init() {
 
   SDL_GL_MakeCurrent(m_state.window, m_state.glcontext);
   SDL_GL_SetSwapInterval(1);
+  GLCall(glEnable(GL_BLEND));
+  GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
   glewExperimental = GL_TRUE;
   GLenum glewError = glewInit();
@@ -62,31 +65,44 @@ void Game::Run() {
   SDL_Log("running...");
 
   // data to go to the gpu
-  float positions[] = {-0.5f, -0.5f, // 0
-                       0.5f,  -0.5f, // 1
-                       0.5f,  0.5f,  // 2
-                       -0.5f, 0.5f}; // 3
-  unsigned int indices[] = {0, 1, 2, 2, 3, 0};
+float vertices[] = {
+    // Index 0: Bottom-left
+    -0.5f, -0.5f,  0.0f, 0.0f,
+    // Index 1: Bottom-right
+     0.5f, -0.5f,  1.0f, 0.0f,
+    // Index 2: Top-right
+     0.5f,  0.5f, 1.0f, 1.0f,
+    // Index 3: Top-left
+    -0.5f,  0.5f, 0.0f, 1.0f
+};
+
+// 6 indices to form two triangles from the 4 vertices
+unsigned int indices[] = {
+    0, 1, 2, // First triangle: BL, BR, TR
+    2, 3, 0  // Second triangle: TR, TL, BL (Note: Winding order consistent)
+};
 
   // create vertex attrib object VAO
   VertexArray va;  
   // create vertex buffer object VBO
-  VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+  VertexBuffer vb(vertices, 4 * 4 * sizeof(float));
   // create and save the layout.
   VertexBufferLayout layout;
-  layout.Push<float>(2);
+  layout.Push<float>(2);// pos
+  layout.Push<float>(2);// tex
   va.AddBuffer(vb, layout);
   // create indicies buffer object IBO
   IndexBuffer ib(indices, 6);
   // get and compile shader from file
   Shader shader("data/res/Basic.shader");
   shader.Bind();
-  shader.SetUniform4f("u_Color", 0.0f, 0.2f, 0.3f, 1.0f);
+  //shader.SetUniform4f("u_Color", 0.0f, 0.2f, 0.3f, 1.0f);
   // create renderer from class
   Renderer renderer;
+  Texture texture("data/textures/logo.png");
+  texture.Bind();
+  shader.SetUniform1i("u_Texture", 0);
 
-  float r = 0.0f;
-  float increment = 0.005f;
   // start of the running loop
   while (running) {
     SDL_Event event{0};
@@ -105,18 +121,11 @@ void Game::Run() {
       }
       }
     } // end of event loop
+
     renderer.Clear();    
     shader.Bind();
-    shader.SetUniform4f("u_Color", r, 0.2f, 0.3f, 1.0f);
+    //shader.SetUniform4f("u_Color", r, 0.2f, 0.3f, 1.0f);
     renderer.Draw(va,ib,shader);
-
-
-    if (r > 1.0f)
-      increment = -0.0005f;
-    else if (r < 0.0f)
-      increment = 0.0005f;
-
-    r += increment;
 
     SDL_GL_SwapWindow(m_state.window);
 
