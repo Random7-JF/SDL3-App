@@ -78,12 +78,9 @@ void Game::Run() {
   // create indicies buffer object IBO
   IndexBuffer ib(indices, 6);
   // get and compile shader from file
-  ShaderProgramSource source = ParseShader("data/res/Basic.shader");
-  unsigned int shader =
-      CreateShader(source.VertexSource, source.FragmentSource);
-   
-  GLCall(int uniformLocation = glGetUniformLocation(shader, "u_Color"));
-  ASSERT(uniformLocation != -1);
+  Shader shader("data/res/Basic.shader");
+  shader.Bind();
+  shader.SetUniform4f("u_Color", 0.0f, 0.2f, 0.3f, 1.0f);
 
   float r = 0.0f;
   float increment = 0.005f;
@@ -109,12 +106,11 @@ void Game::Run() {
     // OpenGL
     glClear(GL_COLOR_BUFFER_BIT |
             GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
-    GLCall(glUseProgram(shader));
-    GLCall(glUniform4f(uniformLocation, r, 0.2f, 0.3f, 1.0f));
+    shader.Bind();
+    shader.SetUniform4f("u_Color", r, 0.2f, 0.3f, 1.0f);
     va.Bind();
     ib.Bind();
     GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-
 
     if (r > 1.0f)
       increment = -0.0005f;
@@ -126,7 +122,6 @@ void Game::Run() {
     SDL_GL_SwapWindow(m_state.window);
 
   } // end of running loop
-  glDeleteProgram(shader);
   SDL_DestroyRenderer(m_state.renderer);
   SDL_DestroyWindow(m_state.window);
 }
