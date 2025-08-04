@@ -1,10 +1,7 @@
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
-#include <fstream>
-#include <sstream>
 #include <string>
 
-#include "asset.h"
 #include "game.h"
 #include "indexBuffer.h"
 #include "renderer.h"
