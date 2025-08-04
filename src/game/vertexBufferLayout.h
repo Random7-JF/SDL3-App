@@ -1,23 +1,42 @@
 #pragma once
+#include <vector>
 
 #include "game/renderer.h"
-#include <vector>
-struct VertexBufferElement {
+#include <GL/glew.h>
+
+struct VertexBufferElement
+{
   unsigned int type;
   unsigned int count;
-  bool normalized;
+  unsigned char normalized;
+
+  static unsigned int GetSizeOfType(unsigned int type)
+  {
+    switch (type)
+    {
+    case GL_FLOAT: return 4;
+    case GL_UNSIGNED_INT: return 4;
+    case GL_UNSIGNED_BYTE: return 1;
+    default:
+      ASSERT(false)
+      return 0;
+    }
+  }
 };
 
-class VertexBufferLayout {
+class VertexBufferLayout
+{
 private:
   std::vector<VertexBufferElement> m_elements;
+  unsigned int m_stride;
 
 public:
-  VertexBufferLayout();
+  VertexBufferLayout()
+      : m_stride(0) {}
 
-  template <typename T> void Push(int count) { static_assert(false); }
+  template <typename T>
+  void Push(unsigned int  count) { ASSERT(false); }
 
-  template <> void Push<float>(int count) {
-    m_elements.push_back({GL_FLOAT, count, false});
-  }
+  inline const std::vector<VertexBufferElement> GetElements() const { return m_elements; }
+  inline unsigned int GetStride() const { return m_stride; }
 };

@@ -7,6 +7,7 @@
 #include "renderer.h"
 #include "shader.h"
 #include "vertexBuffer.h"
+#include "vertexArray.h"
 
 bool Game::Init() {
   bool initialized = false;
@@ -67,25 +68,20 @@ void Game::Run() {
   unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
   // create vertex attrib object VAO
-  unsigned int vao;
-  GLCall(glGenVertexArrays(1, &vao));
-  GLCall(glBindVertexArray(vao));
-
+  VertexArray va;  
   // create vertex buffer object VBO
   VertexBuffer vb(positions, 4 * 2 * sizeof(float));
-
+  // create and save the layout.
+  VertexBufferLayout layout;
+  layout.Push<float>(2);
+  va.AddBuffer(vb, layout);
   // create indicies buffer object IBO
   IndexBuffer ib(indices, 6);
-
-  GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 2, 0));
-  GLCall(glEnableVertexAttribArray(0));
-
   // get and compile shader from file
   ShaderProgramSource source = ParseShader("data/res/Basic.shader");
   unsigned int shader =
       CreateShader(source.VertexSource, source.FragmentSource);
-  glUseProgram(shader);
-
+   
   GLCall(int uniformLocation = glGetUniformLocation(shader, "u_Color"));
   ASSERT(uniformLocation != -1);
 
@@ -113,12 +109,12 @@ void Game::Run() {
     // OpenGL
     glClear(GL_COLOR_BUFFER_BIT |
             GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
-
-    glBindVertexArray(vao);
+    GLCall(glUseProgram(shader));
     GLCall(glUniform4f(uniformLocation, r, 0.2f, 0.3f, 1.0f));
-
+    va.Bind();
     ib.Bind();
     GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
 
     if (r > 1.0f)
       increment = -0.0005f;
