@@ -43,6 +43,7 @@ bool Game::Init() {
 
   SDL_GL_MakeCurrent(m_state.window, m_state.glcontext);
   SDL_GL_SetSwapInterval(1);
+  
   GLCall(glEnable(GL_BLEND));
   GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
