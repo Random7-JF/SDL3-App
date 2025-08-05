@@ -1,5 +1,7 @@
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <string>
 
 #include "game.h"
@@ -43,7 +45,7 @@ bool Game::Init() {
 
   SDL_GL_MakeCurrent(m_state.window, m_state.glcontext);
   SDL_GL_SetSwapInterval(1);
-  
+
   GLCall(glEnable(GL_BLEND));
   GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
@@ -94,6 +96,7 @@ unsigned int indices[] = {
   va.AddBuffer(vb, layout);
   // create indicies buffer object IBO
   IndexBuffer ib(indices, 6);
+  
   // get and compile shader from file
   Shader shader("data/res/Basic.shader");
   shader.Bind();
@@ -103,6 +106,10 @@ unsigned int indices[] = {
   Texture texture("data/textures/logo.png");
   texture.Bind();
   shader.SetUniform1i("u_Texture", 0);
+   
+  // projection matrix
+  glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+  shader.SetUniformMat4f("u_MVP", proj);
 
   // start of the running loop
   while (running) {
