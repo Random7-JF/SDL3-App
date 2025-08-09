@@ -34,7 +34,7 @@ public:
       : m_stride(0) {}
 
   template <typename T>
-  void Push(unsigned int  count) { ASSERT(false); }
+  void Push(unsigned int count) { ASSERT(false); }
 
   inline const std::vector<VertexBufferElement> GetElements() const { return m_elements; }
   inline unsigned int GetStride() const { return m_stride; }

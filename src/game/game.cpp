@@ -108,7 +108,13 @@ void Game::Run() {
   // projection matrix
   glm::mat4 proj = glm::ortho(0.0f, float(m_state.windowWidth), 0.0f,
                               (float)m_state.windowHeight, -1.0f, 1.0f);
-  shader.SetUniformMat4f("u_MVP", proj);
+  // view matrix
+  glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(400, 0, 0));
+  // model matrix
+  glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0,-300,0));
+  // model view project made and set
+  glm::mat4 mpv = proj * view * model;
+  shader.SetUniformMat4f("u_MVP", mpv);
 
   // start of the running loop
   while (running) {
