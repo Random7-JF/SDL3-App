@@ -8,10 +8,10 @@
 #include "indexBuffer.h"
 #include "renderer.h"
 #include "shader.h"
-#include "vertexBuffer.h"
-#include "vertexArray.h"
-#include "vertexBufferLayout.h"
 #include "texture.h"
+#include "vertexArray.h"
+#include "vertexBuffer.h"
+#include "vertexBufferLayout.h"
 
 bool Game::Init() {
   bool initialized = false;
@@ -68,47 +68,46 @@ void Game::Run() {
   SDL_Log("running...");
 
   // data to go to the gpu
-float vertices[] = {
-    // Index 0: Bottom-left
-    -0.5f, -0.5f,  0.0f, 0.0f,
-    // Index 1: Bottom-right
-     0.5f, -0.5f,  1.0f, 0.0f,
-    // Index 2: Top-right
-     0.5f,  0.5f, 1.0f, 1.0f,
-    // Index 3: Top-left
-    -0.5f,  0.5f, 0.0f, 1.0f
-};
+  float vertices[] = {// Index 0: Bottom-left
+                      200.0f, 400.0f, 0.0f, 0.0f,
+                      // Index 1: Bottom-right
+                      600.0f, 400.0f, 1.0f, 0.0f,
+                      // Index 2: Top-right
+                      600.0f, 600.0f, 1.0f, 1.0f,
+                      // Index 3: Top-left
+                      200.0f, 600.0f, 0.0f, 1.0f};
 
-// 6 indices to form two triangles from the 4 vertices
-unsigned int indices[] = {
-    0, 1, 2, // First triangle: BL, BR, TR
-    2, 3, 0  // Second triangle: TR, TL, BL (Note: Winding order consistent)
-};
+  // 6 indices to form two triangles from the 4 vertices
+  unsigned int indices[] = {
+      0, 1, 2, // First triangle: BL, BR, TR
+      2, 3, 0  // Second triangle: TR, TL, BL (Note: Winding order consistent)
+  };
 
   // create vertex attrib object VAO
-  VertexArray va;  
+  VertexArray va;
   // create vertex buffer object VBO
   VertexBuffer vb(vertices, 4 * 4 * sizeof(float));
   // create and save the layout.
   VertexBufferLayout layout;
-  layout.Push<float>(2);// pos
-  layout.Push<float>(2);// tex
+  layout.Push<float>(2); // pos
+  layout.Push<float>(2); // tex
   va.AddBuffer(vb, layout);
   // create indicies buffer object IBO
   IndexBuffer ib(indices, 6);
-  
+
   // get and compile shader from file
   Shader shader("data/res/Basic.shader");
   shader.Bind();
-  //shader.SetUniform4f("u_Color", 0.0f, 0.2f, 0.3f, 1.0f);
-  // create renderer from class
+  // shader.SetUniform4f("u_Color", 0.0f, 0.2f, 0.3f, 1.0f);
+  //  create renderer from class
   Renderer renderer;
   Texture texture("data/textures/logo.png");
   texture.Bind();
   shader.SetUniform1i("u_Texture", 0);
-   
+
   // projection matrix
-  glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+  glm::mat4 proj = glm::ortho(0.0f, float(m_state.windowWidth), 0.0f,
+                              (float)m_state.windowHeight, -1.0f, 1.0f);
   shader.SetUniformMat4f("u_MVP", proj);
 
   // start of the running loop
@@ -130,10 +129,10 @@ unsigned int indices[] = {
       }
     } // end of event loop
 
-    renderer.Clear();    
+    renderer.Clear();
     shader.Bind();
-    //shader.SetUniform4f("u_Color", r, 0.2f, 0.3f, 1.0f);
-    renderer.Draw(va,ib,shader);
+    // shader.SetUniform4f("u_Color", r, 0.2f, 0.3f, 1.0f);
+    renderer.Draw(va, ib, shader);
 
     SDL_GL_SwapWindow(m_state.window);
 
