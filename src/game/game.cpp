@@ -4,6 +4,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
 
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_opengl3.h>
+
 #include "game.h"
 #include "indexBuffer.h"
 #include "renderer.h"
@@ -13,9 +17,11 @@
 #include "vertexBuffer.h"
 #include "vertexBufferLayout.h"
 
-bool Game::Init() {
+bool Game::Init()
+{
   bool initialized = false;
-  if (!SDL_Init(SDL_INIT_VIDEO)) {
+  if (!SDL_Init(SDL_INIT_VIDEO))
+  {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Error Initializing SDL3", nullptr);
     return initialized;
@@ -32,13 +38,15 @@ bool Game::Init() {
   m_state.window =
       SDL_CreateWindow("SDL", m_state.windowWidth, m_state.windowHeight,
                        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-  if (!m_state.window) {
+  if (!m_state.window)
+  {
     SDL_Log("Error with Create Window: %s", SDL_GetError());
     return initialized;
   }
 
   m_state.glcontext = SDL_GL_CreateContext(m_state.window);
-  if (!m_state.glcontext) {
+  if (!m_state.glcontext)
+  {
     SDL_Log("Error with Create Context: %s", SDL_GetError());
     return initialized;
   }
@@ -51,7 +59,8 @@ bool Game::Init() {
 
   glewExperimental = GL_TRUE;
   GLenum glewError = glewInit();
-  if (glewError != GLEW_OK) {
+  if (glewError != GLEW_OK)
+  {
     SDL_Log("Glew Error: %s, %d", glewGetErrorString(glewError), glewError);
     return initialized;
   }
@@ -59,11 +68,22 @@ bool Game::Init() {
   glViewport(0, 0, m_state.windowWidth, m_state.windowHeight);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+
+  ImGui_ImplSDL3_InitForOpenGL(m_state.window, m_state.glcontext);
+  ImGui_ImplOpenGL3_Init();
+
   initialized = true;
   return initialized;
 }
 
-void Game::Run() {
+void Game::Run()
+{
   bool running = true;
   SDL_Log("running...");
 
@@ -103,30 +123,32 @@ void Game::Run() {
   Renderer renderer;
   Texture texture("data/textures/logo.png");
   texture.Bind();
-  shader.SetUniform1i("u_Texture", 0);
+
 
   // projection matrix
   glm::mat4 proj = glm::ortho(0.0f, float(m_state.windowWidth), 0.0f,
                               (float)m_state.windowHeight, -1.0f, 1.0f);
   // view matrix
   glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(400, 0, 0));
-  // model matrix
-  glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0,-300,0));
-  // model view project made and set
-  glm::mat4 mpv = proj * view * model;
-  shader.SetUniformMat4f("u_MVP", mpv);
 
+  glm::vec3 translation(0);
   // start of the running loop
-  while (running) {
+  while (running)
+  {
     SDL_Event event{0};
     // start of event loop
-    while (SDL_PollEvent(&event)) {
-      switch (event.type) {
-      case SDL_EVENT_QUIT: {
+    while (SDL_PollEvent(&event))
+    {
+      ImGui_ImplSDL3_ProcessEvent(&event); // Forward your event to backend
+      switch (event.type)
+      {
+      case SDL_EVENT_QUIT:
+      {
         running = false;
         break;
       }
-      case SDL_EVENT_WINDOW_RESIZED: {
+      case SDL_EVENT_WINDOW_RESIZED:
+      {
         m_state.windowWidth = event.window.data1;
         m_state.windowHeight = event.window.data2;
         glViewport(0, 0, m_state.windowWidth, m_state.windowHeight);
@@ -134,15 +156,30 @@ void Game::Run() {
       }
       }
     } // end of event loop
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
+    // model view project made and set
+    glm::mat4 mpv = proj * view * model;
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+    // ImGui::ShowDemoWindow();
+    ImGui::SliderFloat3("Translation", &translation.x, 0, 1280);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
     renderer.Clear();
     shader.Bind();
-    // shader.SetUniform4f("u_Color", r, 0.2f, 0.3f, 1.0f);
+    shader.SetUniformMat4f("u_MVP", mpv);
     renderer.Draw(va, ib, shader);
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     SDL_GL_SwapWindow(m_state.window);
 
   } // end of running loop
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplSDL3_Shutdown();
+  ImGui::DestroyContext();
   SDL_DestroyRenderer(m_state.renderer);
   SDL_DestroyWindow(m_state.window);
 }
