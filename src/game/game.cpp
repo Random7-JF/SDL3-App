@@ -88,14 +88,14 @@ void Game::Run()
   SDL_Log("running...");
 
   // data to go to the gpu
-  float vertices[] = {// Index 0: Bottom-left
-                      200.0f, 400.0f, 0.0f, 0.0f,
+float vertices[] = {// Index 0: Bottom-left
+                      -200.0f, -100.0f, 0.0f, 0.0f,
                       // Index 1: Bottom-right
-                      600.0f, 400.0f, 1.0f, 0.0f,
+                      200.0f, -100.0f, 1.0f, 0.0f,
                       // Index 2: Top-right
-                      600.0f, 600.0f, 1.0f, 1.0f,
+                      200.0f, 100.0f, 1.0f, 1.0f,
                       // Index 3: Top-left
-                      200.0f, 600.0f, 0.0f, 1.0f};
+                      -200.0f, 100.0f, 0.0f, 1.0f};
 
   // 6 indices to form two triangles from the 4 vertices
   unsigned int indices[] = {
@@ -129,7 +129,7 @@ void Game::Run()
   glm::mat4 proj = glm::ortho(0.0f, float(m_state.windowWidth), 0.0f,
                               (float)m_state.windowHeight, -1.0f, 1.0f);
   // view matrix
-  glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(400, 0, 0));
+  glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0));
 
   glm::vec3 translation(0);
   // start of the running loop
