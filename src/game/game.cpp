@@ -53,9 +53,13 @@ bool Game::Init()
 
   SDL_GL_MakeCurrent(m_state.window, m_state.glcontext);
   SDL_GL_SetSwapInterval(1);
-
+  GLCall(glEnable(GL_DEPTH_TEST));
   GLCall(glEnable(GL_BLEND));
   GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+  // GLCall(glDepthFunc(GL_LESS));
+  // GLCall(glCullFace(GL_BACK));
+  // GLCall(glFrontFace(GL_CCW));
+
 
   glewExperimental = GL_TRUE;
   GLenum glewError = glewInit();
@@ -88,32 +92,34 @@ void Game::Run()
   SDL_Log("running...");
 
   // data to go to the gpu
-float vertices[] = {// Index 0: Bottom-left
-                      -200.0f, -100.0f, 0.0f, 0.0f,
-                      // Index 1: Bottom-right
-                      200.0f, -100.0f, 1.0f, 0.0f,
-                      // Index 2: Top-right
-                      200.0f, 100.0f, 1.0f, 1.0f,
-                      // Index 3: Top-left
-                      -200.0f, 100.0f, 0.0f, 1.0f};
-
-  // 6 indices to form two triangles from the 4 vertices
+  float vertices[] = {
+    // X      Y      Z      U      V
+    -0.5f, 0.0f,  0.5f, 0.0f, 0.0f, // Vertex 0: FL - (0,0)
+    -0.5f, 0.0f, -0.5f, 1.0f, 0.0f, // Vertex 1: BL - (1,0)
+     0.5f, 0.0f, -0.5f, 0.0f, 0.0f, // Vertex 2: BR - (0,0)
+     0.5f, 0.0f,  0.5f, 1.0f, 0.0f, // Vertex 3: FR - (1,0)
+     0.0f, 0.8f,  0.0f, 0.5f, 1.0f  // Vertex 4: Apex - (0.5,1)
+  };
   unsigned int indices[] = {
-      0, 1, 2, // First triangle: BL, BR, TR
-      2, 3, 0  // Second triangle: TR, TL, BL (Note: Winding order consistent)
+    0,1,2,
+    0,3,2,
+    0,3,4,
+    3,2,4,
+    2,1,4,
+    1,0,4
   };
 
   // create vertex attrib object VAO
   VertexArray va;
   // create vertex buffer object VBO
-  VertexBuffer vb(vertices, 4 * 4 * sizeof(float));
+  VertexBuffer vb(vertices, 5 * 5 * sizeof(float));
   // create and save the layout.
   VertexBufferLayout layout;
-  layout.Push<float>(2); // pos
+  layout.Push<float>(3); // pos
   layout.Push<float>(2); // tex
   va.AddBuffer(vb, layout);
   // create indicies buffer object IBO
-  IndexBuffer ib(indices, 6);
+  IndexBuffer ib(indices, 18);
 
   // get and compile shader from file
   Shader shader("data/res/Basic.shader");
@@ -121,20 +127,17 @@ float vertices[] = {// Index 0: Bottom-left
   // shader.SetUniform4f("u_Color", 0.0f, 0.2f, 0.3f, 1.0f);
   //  create renderer from class
   Renderer renderer;
-  Texture texture("data/textures/logo.png");
+  Texture texture("data/textures/brick.png");
   texture.Bind();
 
-
-  // projection matrix
-  glm::mat4 proj = glm::ortho(0.0f, float(m_state.windowWidth), 0.0f,
-                              (float)m_state.windowHeight, -1.0f, 1.0f);
-  // view matrix
-  glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0));
-
-  glm::vec3 translation(0);
+  float rotation = 0.0f;
+  auto currentTime = SDL_GetPerformanceCounter();
   // start of the running loop
   while (running)
   {
+    auto nowTime = SDL_GetPerformanceCounter();
+    auto deltaTime = nowTime - currentTime;
+
     SDL_Event event{0};
     // start of event loop
     while (SDL_PollEvent(&event))
@@ -156,25 +159,40 @@ float vertices[] = {// Index 0: Bottom-left
       }
       }
     } // end of event loop
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
-    // model view project made and set
-    glm::mat4 mpv = proj * view * model;
+
+    if (deltaTime > 60) {
+        rotation -= 0.05f;
+    }
+      // Model Matrix - model Pos
+      glm::mat4 model = glm::mat4(1.0f); 
+      // View Matrix - Camera Pos
+      glm::mat4 view = glm::mat4(1.0f); 
+      // Projection Matix - 3d effect.
+      glm::mat4 proj = glm::mat4(1.0f);
+      // final output
+      model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f,1.0f,0.0f));
+      view = glm::translate(view, glm::vec3(0.0f,-0.5f, -2.0f));
+      proj = glm::perspective(glm::radians(45.0f), (float)(m_state.gameWidth/m_state.gameHeight), 0.1f, 100.0f);
+
+      glm::mat4 mvp = proj* view * model;
+
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
     // ImGui::ShowDemoWindow();
-    ImGui::SliderFloat3("Translation", &translation.x, 0, 1280);
+    // ImGui::SliderFloat3("Translation", &translation.x, 0, 1280);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
     renderer.Clear();
     shader.Bind();
-    shader.SetUniformMat4f("u_MVP", mpv);
+    shader.SetUniformMat4f("u_MVP", mvp);
     renderer.Draw(va, ib, shader);
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     SDL_GL_SwapWindow(m_state.window);
+    currentTime = SDL_GetPerformanceCounter();
 
   } // end of running loop
   ImGui_ImplOpenGL3_Shutdown();
