@@ -92,27 +92,47 @@ void Game::Run()
   SDL_Log("running...");
 
   // data to go to the gpu
-  float vertices[] = {
-    // X      Y      Z      U      V
-    -0.5f, 0.0f,  0.5f, 0.0f, 0.0f, // Vertex 0: FL - (0,0)
-    -0.5f, 0.0f, -0.5f, 1.0f, 0.0f, // Vertex 1: BL - (1,0)
-     0.5f, 0.0f, -0.5f, 0.0f, 0.0f, // Vertex 2: BR - (0,0)
-     0.5f, 0.0f,  0.5f, 1.0f, 0.0f, // Vertex 3: FR - (1,0)
-     0.0f, 0.8f,  0.0f, 0.5f, 1.0f  // Vertex 4: Apex - (0.5,1)
-  };
+  // float vertices[] = {
+  //   // X      Y      Z      U      V
+  //   -0.5f, 0.0f,  0.5f, 0.0f, 0.0f, // Vertex 0: FL - (0,0)
+  //   -0.5f, 0.0f, -0.5f, 1.0f, 0.0f, // Vertex 1: BL - (1,0)
+  //    0.5f, 0.0f, -0.5f, 0.0f, 0.0f, // Vertex 2: BR - (0,0)
+  //    0.5f, 0.0f,  0.5f, 1.0f, 0.0f, // Vertex 3: FR - (1,0)
+  //    0.0f, 0.8f,  0.0f, 0.5f, 1.0f  // Vertex 4: Apex - (0.5,1)
+  // };
+  // unsigned int indices[] = {
+  //   0,1,2,
+  //   0,3,2,
+  //   0,3,4,
+  //   3,2,4,
+  //   2,1,4,
+  //   1,0,4
+  // };
+    float vertices[] = {
+      -0.5f, 0.0f, 0.5f, 0.0f, 0.0f,
+      -0.5f, 0.0f, -0.5f, 1.0f, 0.0f,
+      0.5f, 0.0f, -0.5f, 0.0f, 0.0f,
+      0.5f, 0.0f, 0.5f, 1.0f, 0.0f,
+      0.0f, 0.8f, 0.0f, 0.5f, 1.0f,
+
+      -0.5f, 0.0f, 0.5f, 0.0f, 0.0f,
+      -0.5f, 0.0f, -0.5f, 0.0f, 1.0f,
+      0.5f, 0.0f, -0.5f, 1.0f, 1.0f,
+      0.5f, 0.0f, 0.5f, 1.0f, 0.0f};
+
   unsigned int indices[] = {
-    0,1,2,
-    0,3,2,
-    0,3,4,
-    3,2,4,
-    2,1,4,
-    1,0,4
-  };
+      0, 3, 4,
+      3, 2, 4,
+      2, 1, 4,
+      1, 0, 4,
+
+      5, 6, 7,
+      5, 7, 8};
 
   // create vertex attrib object VAO
   VertexArray va;
   // create vertex buffer object VBO
-  VertexBuffer vb(vertices, 5 * 5 * sizeof(float));
+  VertexBuffer vb(vertices, 9 * 5 * sizeof(float));
   // create and save the layout.
   VertexBufferLayout layout;
   layout.Push<float>(3); // pos
