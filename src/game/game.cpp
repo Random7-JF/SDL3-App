@@ -132,6 +132,7 @@ void Game::Run()
 
   float rotation = 0.0f;
   auto currentTime = SDL_GetPerformanceCounter();
+  glm::vec3 cameraPos(0.0f,-0.5f, -2.0f);
   // start of the running loop
   while (running)
   {
@@ -171,7 +172,7 @@ void Game::Run()
       glm::mat4 proj = glm::mat4(1.0f);
       // final output
       model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f,1.0f,0.0f));
-      view = glm::translate(view, glm::vec3(0.0f,-0.5f, -2.0f));
+      view = glm::translate(view, cameraPos);
       proj = glm::perspective(glm::radians(45.0f), (float)(m_state.gameWidth/m_state.gameHeight), 0.1f, 100.0f);
 
       glm::mat4 mvp = proj* view * model;
@@ -181,7 +182,7 @@ void Game::Run()
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
     // ImGui::ShowDemoWindow();
-    // ImGui::SliderFloat3("Translation", &translation.x, 0, 1280);
+    ImGui::SliderFloat3("Camera", &cameraPos.x,-5,5);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
     renderer.Clear();
